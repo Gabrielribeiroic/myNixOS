@@ -82,6 +82,7 @@
         git
         wget
         firefox
+	btop
       ];
 
       fonts.packages = with pkgs; [

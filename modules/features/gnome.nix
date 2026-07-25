@@ -23,10 +23,23 @@
 
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
-    home-manager.users.zep = { pkgs, ... }: {
+    
+    home-manager.users.zep = { pkgs, config, ... }: {
       home.stateVersion = "26.05"; 
 
       dconf.settings = {
+
+        "org/gnome/desktop/background" = {
+          picture-uri = "file://${../../assets/wallpapers/sunset.jpg}";
+          picture-uri-dark = "file://${../../assets/wallpapers/sunset.jpg}";
+          picture-options = "zoom";
+        };
+
+        "org/gnome/desktop/screensaver" = {
+          picture-uri = "file://${../../assets/wallpapers/sunset.jpg}";
+          lock-enabled = false;
+          idle-activation-enabled = false;
+        }; 
 
         "org/gnome/shell/keybindings" = {
           toggle-application-view = [ "<Super>d" ];
@@ -64,7 +77,6 @@
           switch-to-workspace-3 = [ "<Super>3" ];
           switch-to-workspace-4 = [ "<Super>4" ];
           switch-to-workspace-5 = [ "<Super>5" ];
-          switch-to-workspace-6 = [ "<Super>6" ];
           switch-to-workspace-7 = [ "<Super>7" ];
           switch-to-workspace-8 = [ "<Super>8" ];
           switch-to-workspace-9 = [ "<Super>9" ];
@@ -93,20 +105,15 @@
           binding = "<Super>Return";
         };
 
-	"org/gnome/desktop/session" = {
-	  idle-delay = lib.gvariant.mkUint32 0;
-	};
+        "org/gnome/desktop/session" = {
+          idle-delay = lib.gvariant.mkUint32 0;
+        };
 
-	"org/gnome/desktop/screensaver" = {
-          lock-enabled = false;
-	  idle-activation-enabled = false;
-	};
-
-	"org/gnome/settings-daemon/plugins/power" = {
-	  sleep-inactive-ac-type = "nothing";
-	  idle-dim = false;
-	  sleep-inactive-ac-timeout = 0;
-	};
+        "org/gnome/settings-daemon/plugins/power" = {
+          sleep-inactive-ac-type = "nothing";
+          idle-dim = false;
+          sleep-inactive-ac-timeout = 0;
+        };
       };
     };
   };
