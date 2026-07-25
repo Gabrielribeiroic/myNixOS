@@ -11,26 +11,29 @@
         
         interactiveShellInit = ''
           set -g fish_greeting ""
+
+          # Load Github tokens from sops-nix if present
+          if test -f /run/secrets/github_token
+              set -gx GH_TOKEN (string trim (cat /run/secrets/github_token))
+              set -gx GITHUB_TOKEN $GH_TOKEN
+          end
         '';
 
         shellAliases = {
           ll = "ls -la";
-          
 
-	  # QoL nix aliases
-	  nix-sync = "sudo nixos-rebuild switch --flake ~/myNixOS/";
-	  nix-test-build = "sudo nixos-rebuild test --flake ~/myNixOS/";
-	  nix-upgrade = "sudo nixos-rebuild switch --upgrade --flake ~/myNixOS/";
-	  nix-generations = "nixos-rebuild list-generations";
-	  nix-clean = "sudo nix-collect-garbage -d && nix-store --optimise";
+          # QoL nix aliases
+          nix-sync = "sudo nixos-rebuild switch --flake ~/myNixOS/";
+          nix-test-build = "sudo nixos-rebuild test --flake ~/myNixOS/";
+          nix-upgrade = "sudo nixos-rebuild switch --upgrade --flake ~/myNixOS/";
+          nix-generations = "nixos-rebuild list-generations";
+          nix-clean = "sudo nix-collect-garbage -d && nix-store --optimise";
 
-
-	  # QoL git aliases
-	  gs = "git status";
-	  ga = "git add";
-	  gac = "git add . && git commit -m";
-	  gp = "git push";
-
+          # QoL git aliases
+          gs = "git status";
+          ga = "git add";
+          gac = "git add . && git commit -m";
+          gp = "git push";
         };
       };
     };
