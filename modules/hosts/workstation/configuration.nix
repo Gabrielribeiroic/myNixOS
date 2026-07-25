@@ -9,6 +9,8 @@
 	  self.nixosModules.fish
 	  self.nixosModules.zenbrowser
 	  self.nixosModules.legion
+	  self.nixosModules.gh
+	  self.nixosModules.sops
         ];
 
       nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -68,6 +70,9 @@
 
       # Install firefox.
       programs.firefox.enable = true;
+
+      # Enable SSH Agent
+      # programs.ssh.startAgent = true;
 
       # Allow unfree packages
       nixpkgs.config.allowUnfree = true;
