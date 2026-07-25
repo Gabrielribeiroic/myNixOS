@@ -94,15 +94,18 @@
         };
 
 	"org/gnome/desktop/session" = {
-	  idle-delay = 0;
+	  idle-delay = lib.gvariant.mkUint32 0;
 	};
 
 	"org/gnome/desktop/screensaver" = {
           lock-enabled = false;
+	  idle-activation-enabled = false;
 	};
 
 	"org/gnome/settings-daemon/plugins/power" = {
 	  sleep-inactive-ac-type = "nothing";
+	  idle-dim = false;
+	  sleep-inactive-ac-timeout = 0;
 	};
       };
     };
