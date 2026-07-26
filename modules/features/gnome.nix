@@ -21,6 +21,14 @@
       totem
     ];
 
+    environment.systemPackages = with pkgs; [
+      gnomeExtensions.appindicator
+      gnomeExtensions.blur-my-shell
+      gnomeExtensions.vitals
+      gnomeExtensions.just-perfection
+
+    ];
+
     home-manager.useGlobalPkgs = true;
     home-manager.useUserPackages = true;
     
@@ -28,6 +36,24 @@
       home.stateVersion = "26.05"; 
 
       dconf.settings = {
+
+        # Enable GNOME Shell Extensions automatically
+        "org/gnome/shell" = {
+          disable-user-extensions = false;
+          enabled-extensions = [
+            "appindicatorsupport@rgcjonas.gmail.com"
+            "blur-my-shell@aunetx"
+            "Vitals@CoreCoding.com"
+	    "just-perfection-desktop@just-perfection"
+          ];
+        };
+
+        # Middle Mouse Button Drag-Scroll
+        "org/gnome/desktop/peripherals/mouse" = {
+          scroll-method = "on-button-down";
+          scroll-button = 2;
+          natural-scroll = false;
+        };
 
         "org/gnome/desktop/background" = {
           picture-uri = "file://${../../assets/wallpapers/sunset.jpg}";
@@ -61,6 +87,7 @@
           color-scheme = "prefer-dark";
           enable-hot-corners = false;
           show-battery-percentage = true;
+          gtk-enable-primary-paste = false;
         };
 
         "org/gnome/desktop/wm/keybindings" = {
