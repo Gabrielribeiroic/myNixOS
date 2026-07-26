@@ -13,14 +13,34 @@
 	  self.nixosModules.sops
         ];
 
-      nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+      nix.settings = {
+        experimental-features = [ "nix-command" "flakes" ];
+        substituters = [
+	  "https://attic.xuyh0120.win/lantian"
+	];
+	trusted-public-keys = [
+          "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc="
+	];
+      };
+
+      nixpkgs.overlays = [
+        inputs.nix-cachyos-kernel.overlays.pinned
+      ];
+
+      boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest-lto-x86_64-v3;
+
+      services.scx = {
+        enable = true;
+	scheduler = "scx_lavd";
+      };
 
       # Bootloader.
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 
-      # Use latest kernel.
-      boot.kernelPackages = pkgs.linuxPackages_latest;
+      # Use latest kernel. -> Disabled in order to use cachyos kernel
+      # boot.kernelPackages = pkgs.linuxPackages_latest;
 
       networking.hostName = "workstation"; # Define your hostname.
 
@@ -83,6 +103,7 @@
         wget
         firefox
 	btop
+	scx.full
       ];
 
       fonts.packages = with pkgs; [
