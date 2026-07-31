@@ -56,8 +56,8 @@
       extraGroups = [ "wheel" ];
       shell = pkgs.fish;
       openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICUeS6icEgYSY/KeXVAHg3I5gsaIgnhdmkEJFLX/n6CP zep@fedora-t14g5"
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKiklor/K3gReBQ8C/qqUBYXjTO3YfIiixyZFGSfOvNe zep@cachy-main"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILAMmCq+fp/yhJ3FQmPo5h02i5HavSXCxD1rB3FICOxA zep@cachyos-legion"
+	"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICUeS6icEgYSY/KeXVAHg3I5gsaIgnhdmkEJFLX/n6CP zep@fedora-t14g5"
       ];
     };
 

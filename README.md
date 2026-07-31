@@ -96,6 +96,11 @@ nix run .#colmena -- apply --on vps
 copies the required store paths, and activates the selected configuration. Use
 `--on @oracle` to target every node with the `oracle` deployment tag.
 
+Colmena deploys the local checkout, so a Git push is not required before
+`apply`. Commit and push after a successful deployment to record the exact
+configuration running on the VPS and keep the VPS checkout available for
+emergency local rebuilds.
+
 `zep` has passwordless sudo because the account is SSH-key-only and needs to
 perform NixOS rebuilds. Review `nixos-rebuild switch` output before rebooting;
 use OCI Console Connection if networking or boot configuration is ever broken.
