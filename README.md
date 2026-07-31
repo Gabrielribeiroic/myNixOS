@@ -14,8 +14,8 @@ Of course, this is very basic and lacks proper documentation, but I plan to make
 
 The `vps` configuration targets an Oracle Always Free ARM instance with a single
 `/dev/sda` boot volume. `nixos-anywhere` destroys that disk and creates a 1 GiB
-EFI system partition plus an ext4 root filesystem. It installs GRUB to the UEFI
-removable-media fallback path, avoiding a dependency on OCI UEFI NVRAM entries.
+EFI system partition plus an ext4 root filesystem. It installs systemd-boot to
+the UEFI fallback path, avoiding a dependency on OCI UEFI NVRAM entries.
 
 Before installation, ensure the OCI Security List or Network Security Group
 permits TCP port 22 from your current public IP. The existing Ubuntu instance
@@ -27,9 +27,12 @@ nix flake lock
 nix flake check
 nix eval .#nixosConfigurations.vps.config.system.build.toplevel.drvPath
 
+KEXEC="$(sudo nix build --accept-flake-config --print-out-paths github:nix-community/nixos-images#packages.aarch64-linux.kexec-installer-nixos-unstable-noninteractive)/nixos-kexec-installer-noninteractive-aarch64-linux.tar.gz"
+
+umask 077
 nix run github:nix-community/nixos-anywhere -- \
-  --build-on-remote \
-  --kexec "$(nix build --print-out-paths github:nix-community/nixos-images#packages.aarch64-linux.kexec-installer-nixos-unstable-noninteractive)/nixos-kexec-installer-noninteractive-aarch64-linux.tar.gz" \
+  --build-on remote \
+  --kexec "$KEXEC" \
   --flake .#vps \
   --target-host root@<oracle-public-ip>
 ```
@@ -37,7 +40,10 @@ nix run github:nix-community/nixos-anywhere -- \
 Commit the resulting `flake.lock` before installation so the deployed input set
 is reproducible.
 
-`--build-on-remote` builds the system in the temporary ARM installer, so the
+In Fish, use `set KEXEC (...)` instead of Bash's `KEXEC=...` assignment. SSH
+private keys passed with `-i` must be owned by you and have mode `0600`.
+
+`--build-on remote` builds the system in the temporary ARM installer, so the
 source machine does not need AArch64 emulation. The command destroys the
 current Ubuntu installation. After it completes, remove the old SSH host key
 and log in as `zep`:

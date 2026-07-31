@@ -1,6 +1,6 @@
 { self, ... }:
 {
-  flake.nixosModules.vpsConfiguration = { pkgs, lib, ... }: {
+  flake.nixosModules.vpsConfiguration = { pkgs, ... }: {
     imports = [
       self.nixosModules.vpsDisko
       self.nixosModules.vpsHardware
@@ -8,27 +8,29 @@
 
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-    # OCI uses UEFI. Install to the standard fallback path instead of relying
-    # on a mutable UEFI NVRAM boot entry.
+    # OCI uses UEFI. systemd-boot installs a fallback EFI loader without
+    # relying on a mutable UEFI NVRAM boot entry.
     boot.loader = {
       efi.canTouchEfiVariables = false;
-      grub = {
-        enable = true;
-        device = "nodev";
-        efiSupport = true;
-        efiInstallAsRemovable = true;
-      };
+      systemd-boot.enable = true;
     };
-    boot.kernelParams = [ "console=ttyAMA0,115200" "console=tty0" ];
+    boot.kernelParams = [ "console=tty0" "console=ttyAMA0,115200" ];
 
     networking = {
       hostName = "vps";
-      useDHCP = lib.mkDefault true;
+      useDHCP = false;
       firewall = {
         enable = true;
         allowedTCPPorts = [ 22 ];
         allowedUDPPorts = [ 41641 ];
         trustedInterfaces = [ "tailscale0" ];
+      };
+    };
+    systemd.network = {
+      enable = true;
+      networks."10-oci" = {
+        matchConfig.Name = "en*";
+        networkConfig.DHCP = "yes";
       };
     };
 
