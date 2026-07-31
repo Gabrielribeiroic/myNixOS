@@ -76,6 +76,26 @@ git pull --ff-only
 sudo nixos-rebuild switch --flake .#vps
 ```
 
+### Colmena deployments
+
+The pinned Colmena output deploys to the Oracle VPS as `zep`, uses passwordless
+sudo for activation, and builds the AArch64 closure on the VPS. The target IP is
+defined in `modules/colmena.nix`; update it if OCI assigns a different public
+IP.
+
+From your development machine, first confirm the remote SSH connection, then
+build or apply the selected node:
+
+```bash
+ssh zep@164.152.53.60 true
+nix run .#colmena -- build --on vps
+nix run .#colmena -- apply --on vps
+```
+
+`build` realizes the closure on the target without activation. `apply` builds,
+copies the required store paths, and activates the selected configuration. Use
+`--on @oracle` to target every node with the `oracle` deployment tag.
+
 `zep` has passwordless sudo because the account is SSH-key-only and needs to
 perform NixOS rebuilds. Review `nixos-rebuild switch` output before rebooting;
 use OCI Console Connection if networking or boot configuration is ever broken.
