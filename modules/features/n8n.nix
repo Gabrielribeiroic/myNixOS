@@ -12,15 +12,15 @@
       n8nEnvironment = {
         DB_TYPE = "postgresdb";
         DB_POSTGRESDB_HOST = "127.0.0.1";
-        DB_POSTGRESDB_PORT = 5432;
+        DB_POSTGRESDB_PORT = "5432";
         DB_POSTGRESDB_DATABASE = "n8n";
         DB_POSTGRESDB_USER = "n8n";
         EXECUTIONS_MODE = "queue";
-        EXECUTIONS_DATA_PRUNE = true;
-        EXECUTIONS_DATA_MAX_AGE = 168;
+        EXECUTIONS_DATA_PRUNE = "true";
+        EXECUTIONS_DATA_MAX_AGE = "168";
         N8N_LISTEN_ADDRESS = "127.0.0.1";
         QUEUE_BULL_REDIS_HOST = "127.0.0.1";
-        QUEUE_BULL_REDIS_PORT = 6379;
+        QUEUE_BULL_REDIS_PORT = "6379";
       };
     in
     {
