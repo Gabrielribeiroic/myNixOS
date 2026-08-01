@@ -7,7 +7,11 @@
       ...
     }:
     let
-      inherit (config.sops.secrets) n8n_db_password n8n_encryption_key;
+      inherit (config.sops.secrets)
+        n8n_db_password
+        n8n_encryption_key
+        n8n_runners_auth_token
+        ;
 
       n8nEnvironment = {
         DB_TYPE = "postgresdb";
@@ -24,11 +28,16 @@
       };
     in
     {
-      nixpkgs.config.allowUnfreePredicate = pkg: lib.getName pkg == "n8n";
+      nixpkgs.config.allowUnfreePredicate = pkg:
+        builtins.elem (lib.getName pkg) [
+          "n8n"
+          "n8n-task-runner-launcher"
+        ];
 
       sops.secrets = {
         n8n_db_password.sopsFile = ../../secrets/n8n.yaml;
         n8n_encryption_key.sopsFile = ../../secrets/n8n.yaml;
+        n8n_runners_auth_token.sopsFile = ../../secrets/n8n.yaml;
       };
 
       services = {
@@ -37,6 +46,11 @@
           environment = n8nEnvironment // {
             DB_POSTGRESDB_PASSWORD_FILE = n8n_db_password.path;
             N8N_ENCRYPTION_KEY_FILE = n8n_encryption_key.path;
+            N8N_RUNNERS_AUTH_TOKEN_FILE = n8n_runners_auth_token.path;
+          };
+          taskRunners = {
+            enable = true;
+            runners.python.enable = false;
           };
         };
 
@@ -107,10 +121,10 @@
         partOf = [ "n8n.service" ];
         environment = n8nEnvironment // {
           N8N_USER_FOLDER = "/var/lib/n8n-worker";
-          # Only the main process hosts the task broker in queue mode.
-          N8N_RUNNERS_ENABLED = "false";
+          N8N_RUNNERS_MODE = "external";
           DB_POSTGRESDB_PASSWORD_FILE = "%d/n8n_db_password";
           N8N_ENCRYPTION_KEY_FILE = "%d/n8n_encryption_key";
+          N8N_RUNNERS_AUTH_TOKEN_FILE = "%d/n8n_runners_auth_token";
         };
         serviceConfig = {
           Type = "simple";
@@ -121,6 +135,7 @@
           LoadCredential = [
             "n8n_db_password:${n8n_db_password.path}"
             "n8n_encryption_key:${n8n_encryption_key.path}"
+            "n8n_runners_auth_token:${n8n_runners_auth_token.path}"
           ];
           NoNewPrivileges = true;
           PrivateTmp = true;
