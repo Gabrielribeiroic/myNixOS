@@ -8,6 +8,7 @@
       self.nixosModules.fish
       self.nixosModules.gh
       self.nixosModules.sops
+      self.nixosModules.n8n
     ];
 
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
