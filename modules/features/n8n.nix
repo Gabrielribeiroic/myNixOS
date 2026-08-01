@@ -107,6 +107,8 @@
         partOf = [ "n8n.service" ];
         environment = n8nEnvironment // {
           N8N_USER_FOLDER = "/var/lib/n8n-worker";
+          # Only the main process hosts the task broker in queue mode.
+          N8N_RUNNERS_ENABLED = "false";
           DB_POSTGRESDB_PASSWORD_FILE = "%d/n8n_db_password";
           N8N_ENCRYPTION_KEY_FILE = "%d/n8n_encryption_key";
         };
