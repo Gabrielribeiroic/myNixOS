@@ -11,7 +11,7 @@
 
       n8nEnvironment = {
         DB_TYPE = "postgresdb";
-        DB_POSTGRESDB_HOST = "127.0.0.1";
+        DB_POSTGRESDB_HOST = "0.0.0.0";
         DB_POSTGRESDB_PORT = "5432";
         DB_POSTGRESDB_DATABASE = "n8n";
         DB_POSTGRESDB_USER = "n8n";
