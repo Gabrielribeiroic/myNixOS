@@ -45,7 +45,10 @@
         n8n_db_password.sopsFile = ../../secrets/n8n.yaml;
         n8n_encryption_key.sopsFile = ../../secrets/n8n.yaml;
         n8n_runners_auth_token.sopsFile = ../../secrets/n8n.yaml;
-        cloudflare_tunnel_token.sopsFile = ../../secrets/n8n.yaml;
+        cloudflare_tunnel_token = {
+          sopsFile = ../../secrets/n8n.yaml;
+          restartUnits = [ "cloudflared-n8n.service" ];
+        };
       };
 
       services = {
