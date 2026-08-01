@@ -2,5 +2,5 @@ creation_rules:
   - path_regex: secrets/.*\.yaml$
     key_groups:
       - age:
-          - "age1x2xcu8ml8yrwyhk466mkq7rc0cux39anawcgr4gstee7pl83j9cqzdwt8l"
-          - "age157r8ngcus3jngrhjsv4nk4dsmj34vdk2ynq0457vqylguk4tlqcsq26fx2"
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILAMmCq+fp/yhJ3FQmPo5h02i5HavSXCxD1rB3FICOxA zep@cachyos-legion"
+          - "age1gdns5u4afelhylmypdgznk0x0gqtmtk23z38zr678f2eukfpapashptwps"
