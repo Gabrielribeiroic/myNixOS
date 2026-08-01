@@ -87,7 +87,9 @@
         };
         script = ''
           password="$(<"$CREDENTIALS_DIRECTORY/n8n_db_password")"
-          ${lib.getExe' pkgs.postgresql "psql"} --dbname=postgres --set=role_password="$password" --command "ALTER ROLE n8n PASSWORD :'role_password';"
+          ${lib.getExe' pkgs.postgresql "psql"} --dbname=postgres --set=role_password="$password" <<'SQL'
+          ALTER ROLE n8n PASSWORD :'role_password';
+          SQL
         '';
       };
 
