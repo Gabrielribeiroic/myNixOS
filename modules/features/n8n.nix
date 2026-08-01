@@ -11,6 +11,7 @@
         n8n_db_password
         n8n_encryption_key
         n8n_runners_auth_token
+        cloudflare_tunnel_token
         ;
 
       n8nEnvironment = {
@@ -22,13 +23,19 @@
         EXECUTIONS_MODE = "queue";
         EXECUTIONS_DATA_PRUNE = "true";
         EXECUTIONS_DATA_MAX_AGE = "168";
-        N8N_LISTEN_ADDRESS = "0.0.0.0";
+        N8N_LISTEN_ADDRESS = "127.0.0.1";
+        N8N_HOST = "n8n.zephiron.uk";
+        N8N_PROTOCOL = "https";
+        N8N_EDITOR_BASE_URL = "https://n8n.zephiron.uk";
+        N8N_PROXY_HOPS = "1";
+        WEBHOOK_URL = "https://n8n.zephiron.uk";
         QUEUE_BULL_REDIS_HOST = "127.0.0.1";
         QUEUE_BULL_REDIS_PORT = "6379";
       };
     in
     {
-      nixpkgs.config.allowUnfreePredicate = pkg:
+      nixpkgs.config.allowUnfreePredicate =
+        pkg:
         builtins.elem (lib.getName pkg) [
           "n8n"
           "n8n-task-runner-launcher"
@@ -38,6 +45,7 @@
         n8n_db_password.sopsFile = ../../secrets/n8n.yaml;
         n8n_encryption_key.sopsFile = ../../secrets/n8n.yaml;
         n8n_runners_auth_token.sopsFile = ../../secrets/n8n.yaml;
+        cloudflare_tunnel_token.sopsFile = ../../secrets/n8n.yaml;
       };
 
       services = {
@@ -78,6 +86,21 @@
           port = 6379;
           bind = "127.0.0.1";
         };
+
+        traefik = {
+          enable = true;
+          staticConfigOptions.entryPoints.web.address = "127.0.0.1:8080";
+          dynamicConfigOptions.http = {
+            routers.n8n = {
+              entryPoints = [ "web" ];
+              rule = "Host(`n8n.zephiron.uk`)";
+              service = "n8n";
+            };
+            services.n8n.loadBalancer.servers = [
+              { url = "http://127.0.0.1:5678"; }
+            ];
+          };
+        };
       };
 
       systemd.services.n8n-postgresql-password = {
@@ -103,6 +126,41 @@
           ALTER ROLE n8n PASSWORD :'role_password';
           SQL
         '';
+      };
+
+      # The dashboard-managed tunnel accepts a token file, keeping the bearer
+      # token out of both the Nix store and the process command line.
+      systemd.services.cloudflared-n8n = {
+        description = "Cloudflare Tunnel for n8n";
+        after = [
+          "network-online.target"
+          "traefik.service"
+        ];
+        wants = [ "network-online.target" ];
+        requires = [ "traefik.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          DynamicUser = true;
+          LoadCredential = [
+            "cloudflare_tunnel_token:${cloudflare_tunnel_token.path}"
+          ];
+          ExecStart = "${lib.getExe pkgs.cloudflared} tunnel --no-autoupdate --metrics 127.0.0.1:20241 run --token-file %d/cloudflare_tunnel_token --url http://127.0.0.1:8080";
+          Restart = "on-failure";
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          PrivateDevices = true;
+          ProtectSystem = "strict";
+          ProtectHome = true;
+          RestrictAddressFamilies = [
+            "AF_UNIX"
+            "AF_INET"
+            "AF_INET6"
+          ];
+          RestrictNamespaces = true;
+          RestrictRealtime = true;
+          RestrictSUIDSGID = true;
+          LockPersonality = true;
+        };
       };
 
       systemd.services.n8n-worker = {
