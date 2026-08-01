@@ -122,6 +122,9 @@
         environment = n8nEnvironment // {
           N8N_USER_FOLDER = "/var/lib/n8n-worker";
           N8N_RUNNERS_MODE = "external";
+          # Queue workers still start a broker; keep it separate from the
+          # main process broker used by the external task-runner service.
+          N8N_RUNNERS_BROKER_PORT = "5689";
           DB_POSTGRESDB_PASSWORD_FILE = "%d/n8n_db_password";
           N8N_ENCRYPTION_KEY_FILE = "%d/n8n_encryption_key";
           N8N_RUNNERS_AUTH_TOKEN_FILE = "%d/n8n_runners_auth_token";
