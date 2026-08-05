@@ -4,3 +4,4 @@ creation_rules:
       - age:
           - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILAMmCq+fp/yhJ3FQmPo5h02i5HavSXCxD1rB3FICOxA zep@cachyos-legion"
           - "age1gdns5u4afelhylmypdgznk0x0gqtmtk23z38zr678f2eukfpapashptwps"
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMVkmumZLXSQ0kL+3Vd7rtq9w73mP0uS8gNrwIuEMjua root@nixos"
