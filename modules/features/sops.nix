@@ -17,6 +17,10 @@
       age.keyFile = "/var/lib/sops-nix/key.txt";
       age.generateKey = true;
 
+      secrets.searxng_secret_key = {
+        sopsFile = ../../secrets/searxng.yaml;
+      };
+
       secrets.github_token = {
         owner = "zep";
       };

@@ -5,6 +5,8 @@
       inputs.home-manager.nixosModules.home-manager
       self.nixosModules.fish
       self.nixosModules.gh
+      self.nixosModules.sops
+      self.nixosModules.searxng
     ];
 
     home-manager = {
@@ -84,6 +86,9 @@
 
     # Tailscale
     services.tailscale.enable = true;
+
+    # SearXNG
+    features.searxng.enable = true;
 
     # Syncthing on external drive
     services.syncthing = {
