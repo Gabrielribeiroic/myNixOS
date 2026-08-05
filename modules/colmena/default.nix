@@ -22,5 +22,18 @@
         tags = [ "oracle" "vps" ];
       };
     };
+
+    homelab = {
+      imports = [
+        self.nixosModules.homelabConfiguration
+      ];
+
+      deployment = {
+        targetHost = "100.103.54.65";
+        targetUser = "zep";
+        buildOnTarget = true;
+        tags = [ "homelab" "tailscale" ];
+      };
+    };
   };
 }
