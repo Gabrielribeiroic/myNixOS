@@ -93,8 +93,10 @@
     # Allow Colmena to deploy (passwordless sudo)
     security.sudo.extraRules = [{
       users = ["zep"];
-      cmd = "ALL";
-      options = ["NOPASSWD"];
+      commands = [{
+        command = "ALL";
+        options = "NOPASSWD";
+      }];
     }];
 
     # Syncthing on external drive
