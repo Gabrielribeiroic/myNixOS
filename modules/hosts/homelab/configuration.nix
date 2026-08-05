@@ -90,6 +90,13 @@
     # SearXNG
     features.searxng.enable = true;
 
+    # Allow Colmena to deploy (passwordless sudo)
+    security.sudo.extraRules = [{
+      users = ["zep"];
+      cmd = "ALL";
+      options = ["NOPASSWD"];
+    }];
+
     # Syncthing on external drive
     services.syncthing = {
       enable = true;
