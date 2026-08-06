@@ -74,6 +74,7 @@
       batmon
       tailscale
       fastfetch
+      cmake
     ];
 
     # SSH
