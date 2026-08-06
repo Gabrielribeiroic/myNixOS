@@ -31,6 +31,69 @@
         allowedUDPPorts = [ 22000 21027 ];
         trustedInterfaces = [ "tailscale0" ];
       };
+      firewall.interfaces."wlp3s0".allowedUDPPorts = [ 53 67 ];
+    };
+
+    # Wi-Fi AP (hostapd) — makeshift router on the internal Wi-Fi chip
+    networking.networkmanager.unmanaged = [ "interface-name:wlp3s0" ];
+    networking.interfaces.wlp3s0.ipv4.addresses = [{
+      address = "10.42.0.1";
+      prefixLength = 24;
+    }];
+
+    services.hostapd = {
+      enable = true;
+      radios.wlp3s0 = {
+        # 5 GHz AP is impossible on this 8265: iwlwifi firmware (LAR) keeps
+        # 5 GHz channels NO-IR regardless of country (see ArchWiki "Software
+        # access point": Intel devices since 2019). 2.4 GHz only.
+        band = "2g";
+        channel = 6;
+        countryCode = "BR";
+        networks.wlp3s0 = { # primary BSS must be named like the radio
+          ssid = "homelab-AP";
+          authentication = {
+            mode = "wpa2-sha256";
+            wpaPasswordFile = "/run/secrets/wifi-pass"; # sops
+          };
+        };
+      };
+    };
+
+    services.dnsmasq = {
+      enable = true;
+      resolveLocalQueries = false; # don't hijack the host's own DNS
+      settings = {
+        interface = "wlp3s0";
+        bind-interfaces = true;
+        dhcp-range = [ "10.42.0.10,10.42.0.200,12h" ];
+      };
+    };
+
+    networking.nat = {
+      enable = true;
+      internalInterfaces = [ "wlp3s0" ];
+      externalInterface = "enp0s31f6";
+    };
+
+    # hostapd must not start before sops has written the passphrase
+    systemd.services.hostapd = {
+      requires = [ "sops-install-secrets.service" ];
+      after = [ "sops-install-secrets.service" ];
+    };
+
+    # dnsmasq needs wlp3s0 up (with its address) before it can bind
+    systemd.services.dnsmasq = {
+      after = [ "hostapd.service" ];
+    };
+
+    sops = {
+      # makes sops-nix provision secrets via a sysinit unit (so hostapd can
+      # order itself after it) instead of only the activation script
+      useSystemdActivation = true;
+      secrets."wifi-pass" = {
+        sopsFile = ../../../secrets/hostapd.yaml;
+      };
     };
 
     time.timeZone = "America/Recife";
