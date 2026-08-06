@@ -75,6 +75,9 @@
       tailscale
       fastfetch
       cmake
+      gcc
+      gnumake
+      binutils
     ];
 
     # SSH
