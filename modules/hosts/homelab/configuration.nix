@@ -67,6 +67,11 @@
         interface = "wlp3s0";
         bind-interfaces = true;
         dhcp-range = [ "10.42.0.10,10.42.0.200,12h" ];
+        # DHCP reservations (MAC,IP,hostname)
+        "dhcp-host" = [
+          "70:d8:c2:11:ae:db,10.42.0.83,cachyos-legion"
+          "12:94:05:7b:b6:07,10.42.0.187,fedora-t14g5"
+        ];
       };
     };
 
