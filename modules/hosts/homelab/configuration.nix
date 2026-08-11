@@ -5,8 +5,14 @@
       inputs.home-manager.nixosModules.home-manager
       self.nixosModules.fish
       self.nixosModules.gh
+      self.nixosModules.qbittorrent
       self.nixosModules.sops
       self.nixosModules.searxng
+      self.nixosModules.sonarr
+      self.nixosModules.radarr
+      self.nixosModules.prowlarr
+      self.nixosModules.jellyfin
+      self.nixosModules.seerr
     ];
 
     home-manager = {
@@ -125,7 +131,7 @@
     users.users.zep = {
       isNormalUser = true;
       description = "zep";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [ "networkmanager" "wheel" "media" ];
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICUeS6icEgYSY/KeXVAHg3I5gsaIgnhdmkEJFLX/n6CP zep@fedora-t14g5"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKiklor/K3gReBQ8C/qqUBYXjTO3YfIiixyZFGSfOvNe zep@cachy-main"
@@ -162,6 +168,21 @@
     # SearXNG
     features.searxng.enable = true;
 
+    # Shared group for the media stack: qBittorrent, Sonarr, Radarr, Jellyfin
+    # all write with 0775/0664 perms so hardlinks and atomic moves work.
+    # (zep joins via extraGroups above)
+    users.groups.media = { };
+
+    # qBittorrent
+    features.qbittorrent.enable = true;
+
+    # Media stack: Sonarr + Radarr + Prowlarr + Jellyfin + Seerr
+    features.sonarr.enable = true;
+    features.radarr.enable = true;
+    features.prowlarr.enable = true;
+    features.jellyfin.enable = true;
+    features.seerr.enable = true;
+
     # Allow Colmena to deploy (passwordless sudo)
     security.sudo.extraRules = [{
       users = ["zep"];
@@ -185,6 +206,48 @@
       requires = [ "mnt-SKYHAWK00_4TB.mount" ];
       after = [ "mnt-SKYHAWK00_4TB.mount" ];
       bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
+    };
+
+    # qBittorrent saves to the external drive too
+    systemd.services.qbittorrent = {
+      requires = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
+    };
+
+    # Media stack reads/writes the external drive
+    systemd.services.sonarr = {
+      requires = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
+    };
+    systemd.services.radarr = {
+      requires = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
+    };
+    systemd.services.jellyfin = {
+      requires = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
+    };
+
+    # Samba share of the external drive (LAN/Windows access)
+    services.samba = {
+      enable = true;
+      openFirewall = true; # opens 139/445
+      settings = {
+        global = {
+          "server string" = "homelab NAS";
+          "map to guest" = "never";
+        };
+        nas = {
+          path = "/mnt/SKYHAWK00_4TB";
+          browseable = "yes";
+          "valid users" = "zep";
+          "read only" = "no";
+        };
+      };
     };
 
     # External drive mount
