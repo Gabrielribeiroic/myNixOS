@@ -216,19 +216,37 @@
     };
 
     # Media stack reads/writes the external drive
-    systemd.services.sonarr = {
+    # (drive root is zep-owned, so tmpfiles refuses to create dirs there —
+    # create the library dirs from a root oneshot instead)
+    systemd.services.media-dirs = {
+      description = "Create media library directories on the external drive";
+      wantedBy = [ "multi-user.target" ];
       requires = [ "mnt-SKYHAWK00_4TB.mount" ];
       after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        install -d -o root -g media -m 0775 /mnt/SKYHAWK00_4TB/Media/TV
+        install -d -o root -g media -m 0775 /mnt/SKYHAWK00_4TB/Media/Movies
+        chown root:media /mnt/SKYHAWK00_4TB/Media
+        chmod 0775 /mnt/SKYHAWK00_4TB/Media
+      '';
+    };
+    systemd.services.sonarr = {
+      requires = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" "media-dirs.service" ];
       bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
     };
     systemd.services.radarr = {
       requires = [ "mnt-SKYHAWK00_4TB.mount" ];
-      after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" "media-dirs.service" ];
       bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
     };
     systemd.services.jellyfin = {
       requires = [ "mnt-SKYHAWK00_4TB.mount" ];
-      after = [ "mnt-SKYHAWK00_4TB.mount" ];
+      after = [ "mnt-SKYHAWK00_4TB.mount" "media-dirs.service" ];
       bindsTo = [ "mnt-SKYHAWK00_4TB.mount" ];
     };
 
