@@ -5,6 +5,7 @@
       inputs.home-manager.nixosModules.home-manager
       self.nixosModules.fish
       self.nixosModules.gh
+      self.nixosModules.home-assistant
       self.nixosModules.qbittorrent
       self.nixosModules.sops
       self.nixosModules.searxng
@@ -13,6 +14,7 @@
       self.nixosModules.prowlarr
       self.nixosModules.jellyfin
       self.nixosModules.seerr
+      self.nixosModules.tuya-pc-power
     ];
 
     home-manager = {
@@ -77,6 +79,7 @@
         "dhcp-host" = [
           "70:d8:c2:11:ae:db,10.42.0.83,cachyos-legion"
           "12:94:05:7b:b6:07,10.42.0.187,fedora-t14g5"
+          "bc:35:1e:78:ef:de,10.42.0.115,tuya-relay"
         ];
       };
     };
@@ -181,6 +184,8 @@
     features.radarr.enable = true;
     features.prowlarr.enable = true;
     features.jellyfin.enable = true;
+    features.home-assistant.enable = true;
+    features.tuya-pc-power.enable = false;
     features.seerr.enable = true;
 
     # Allow Colmena to deploy (passwordless sudo)

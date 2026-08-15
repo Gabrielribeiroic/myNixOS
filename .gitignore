@@ -3,3 +3,6 @@ result-*
 *.swp
 *~
 .direnv/
+tinytuya.json
+devices.json
+snapshot.json
