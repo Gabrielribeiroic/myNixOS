@@ -9,6 +9,7 @@
       self.nixosModules.gh
       self.nixosModules.sops
       self.nixosModules.n8n
+      self.nixosModules.crafty
     ];
 
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -97,6 +98,9 @@
       tailscale.enable = true;
       qemuGuest.enable = true;
     };
+
+    # Crafty Controller
+    features.crafty.enable = true;
 
     system.stateVersion = "26.05";
   };
