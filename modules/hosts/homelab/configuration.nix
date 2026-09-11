@@ -1,5 +1,5 @@
 { self, inputs, ... }: {
-  flake.nixosModules.homelabConfiguration = { config, pkgs, ... }: {
+  flake.nixosModules.homelabConfiguration = { config, lib, pkgs, ... }: {
     imports = [
       self.nixosModules.homelabHardware
       inputs.home-manager.nixosModules.home-manager
@@ -15,6 +15,9 @@
       self.nixosModules.jellyfin
       self.nixosModules.seerr
       self.nixosModules.tuya-pc-power
+      self.nixosModules.earnapp
+      self.nixosModules.grass
+      self.nixosModules.pawns-app
     ];
 
     home-manager = {
@@ -108,6 +111,8 @@
       secrets."wifi-pass" = {
         sopsFile = ../../../secrets/hostapd.yaml;
       };
+      secrets."pawns-app-email" = { };
+      secrets."pawns-app-password" = { };
     };
 
     time.timeZone = "America/Recife";
@@ -187,6 +192,18 @@
     features.home-assistant.enable = true;
     features.tuya-pc-power.enable = false;
     features.seerr.enable = true;
+    # Shared public egress: activate exactly one provider deliberately.
+    features.pawns-app.enable = true;
+    features.earnapp.enable = false;
+    features.grass.enable = false;
+    assertions = [{
+      assertion = lib.count (enabled: enabled) [
+        config.features.pawns-app.enable
+        config.features.earnapp.enable
+        config.features.grass.enable
+      ] <= 1;
+      message = "Enable only one public-egress bandwidth-sharing provider on homelab.";
+    }];
 
     # Allow Colmena to deploy (passwordless sudo)
     security.sudo.extraRules = [{
