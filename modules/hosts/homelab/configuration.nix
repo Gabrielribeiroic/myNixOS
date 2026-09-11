@@ -1,5 +1,5 @@
 { self, inputs, ... }: {
-  flake.nixosModules.homelabConfiguration = { config, lib, pkgs, ... }: {
+  flake.nixosModules.homelabConfiguration = { config, pkgs, ... }: {
     imports = [
       self.nixosModules.homelabHardware
       inputs.home-manager.nixosModules.home-manager
@@ -17,7 +17,9 @@
       self.nixosModules.tuya-pc-power
       self.nixosModules.earnapp
       self.nixosModules.grass
-      self.nixosModules.pawns-app
+      self.nixosModules.auto-update
+      self.nixosModules.opencode
+      self.nixosModules.herdr
     ];
 
     home-manager = {
@@ -111,8 +113,6 @@
       secrets."wifi-pass" = {
         sopsFile = ../../../secrets/hostapd.yaml;
       };
-      secrets."pawns-app-email" = { };
-      secrets."pawns-app-password" = { };
     };
 
     time.timeZone = "America/Recife";
@@ -192,18 +192,8 @@
     features.home-assistant.enable = true;
     features.tuya-pc-power.enable = false;
     features.seerr.enable = true;
-    # Shared public egress: activate exactly one provider deliberately.
-    features.pawns-app.enable = true;
     features.earnapp.enable = false;
     features.grass.enable = false;
-    assertions = [{
-      assertion = lib.count (enabled: enabled) [
-        config.features.pawns-app.enable
-        config.features.earnapp.enable
-        config.features.grass.enable
-      ] <= 1;
-      message = "Enable only one public-egress bandwidth-sharing provider on homelab.";
-    }];
 
     # Allow Colmena to deploy (passwordless sudo)
     security.sudo.extraRules = [{
@@ -214,15 +204,264 @@
       }];
     }];
 
+    # Nightly auto-upgrade + weekly reboot + garbage collection
+    features.auto-update.enable = true;
+
+    # Agent devbox: OpenCode (package only — Syncthing owns ~/.config/opencode)
+    features.opencode.enable = true;
+
+    # herdr headless server (user service + linger)
+    features.herdr.enable = true;
+
     # Syncthing on external drive
-    services.syncthing = {
+    services.syncthing =
+      let
+        localDeviceId = "MH7LTXT-LLBD5A3-7KWJD27-JSSQWN3-QHOMYTH-OU5PCBX-4CRDNAF-ZZ2RCQR";
+        sharedDevices = [ "nixos-t480" "fedora-t14g5" "cachyos-legion" ];
+        deviceDefaults = {
+          addresses = [ "dynamic" ];
+          allowedNetworks = [ ];
+          autoAcceptFolders = false;
+          certName = "";
+          compression = "metadata";
+          group = "";
+          ignoredFolders = [ ];
+          introducer = false;
+          maxRecvKbps = 0;
+          maxRequestKiB = 0;
+          maxSendKbps = 0;
+          paused = false;
+          remoteGUIPort = 0;
+          skipIntroductionRemovals = false;
+          untrusted = false;
+        };
+        folderDefaults = {
+          autoNormalize = true;
+          blockIndexing = true;
+          blockPullOrder = "standard";
+          caseSensitiveFS = false;
+          copiers = 0;
+          copyOwnershipFromParent = false;
+          copyRangeMethod = "standard";
+          disableFsync = false;
+          disableSparseFiles = false;
+          filesystemType = "basic";
+          fsWatcherDelayS = 10;
+          fsWatcherEnabled = true;
+          fsWatcherTimeoutS = 0;
+          group = "";
+          hashers = 0;
+          ignoreDelete = false;
+          ignorePerms = false;
+          junctionsAsDirs = false;
+          markerName = ".stfolder";
+          maxConcurrentWrites = 16;
+          maxConflicts = 10;
+          minDiskFree = {
+            unit = "%";
+            value = 1;
+          };
+          modTimeWindowS = 0;
+          order = "random";
+          paused = false;
+          pullerDelayS = 1;
+          pullerMaxPendingKiB = 0;
+          pullerPauseS = 0;
+          rescanIntervalS = 3600;
+          scanProgressIntervalS = 0;
+          sendOwnership = false;
+          sendXattrs = false;
+          syncOwnership = false;
+          syncXattrs = false;
+          xattrFilter = {
+            entries = [ ];
+            maxSingleEntrySize = 1024;
+            maxTotalSize = 4096;
+          };
+        };
+      in
+      {
       enable = true;
       openDefaultPorts = true;
       user = "zep";
       dataDir = "/mnt/SKYHAWK00_4TB/Sync";
       configDir = "/home/zep/.config/syncthing";
       guiAddress = "0.0.0.0:8384";
-    };
+
+      # Declarative transcription of the live config.xml (harvested 2026-09-11).
+      settings = {
+        # The service-level guiAddress below is authoritative for the binding;
+        # the live REST address is intentionally not duplicated here.
+        gui = {
+          authMode = "static";
+          enabled = true;
+          insecureAdminAccess = false;
+          insecureAllowFrameLoading = false;
+          insecureSkipHostcheck = false;
+          metricsWithoutAuth = false;
+          password = "$2a$10$Ei9XCHrRYOauFpjvahr5KeGKeAMkH8ghTkppJ5nHVEjA1zHbuXYry";
+          sendBasicAuthPrompt = false;
+          sessionCookieDurationS = 604800;
+          sessionCookiePath = "/";
+          theme = "black";
+          unixSocketPermissions = "";
+          useTLS = true;
+          user = "zep";
+        };
+
+        options = {
+          alwaysLocalNets = [ ];
+          announceLANAddresses = true;
+          auditEnabled = false;
+          auditFile = "";
+          autoUpgradeIntervalH = 12;
+          cacheIgnoredFiles = false;
+          connectionLimitEnough = 0;
+          connectionLimitMax = 0;
+          connectionPriorityQuicLan = 20;
+          connectionPriorityQuicWan = 40;
+          connectionPriorityRelay = 50;
+          connectionPriorityTcpLan = 10;
+          connectionPriorityTcpWan = 30;
+          connectionPriorityUpgradeThreshold = 0;
+          crURL = "https://crash.syncthing.net/newcrash";
+          crashReportingEnabled = true;
+          featureFlags = [ ];
+          globalAnnounceEnabled = true;
+          globalAnnounceServers = [ "default" ];
+          keepTemporariesH = 24;
+          limitBandwidthInLan = false;
+          listenAddresses = [ "default" ];
+          localAnnounceEnabled = true;
+          localAnnounceMCAddr = "[ff12::8384]:21027";
+          localAnnouncePort = 21027;
+          maxConcurrentIncomingRequestKiB = 0;
+          maxFolderConcurrency = 0;
+          maxRecvKbps = 0;
+          maxSendKbps = 0;
+          minHomeDiskFree = {
+            unit = "%";
+            value = 1;
+          };
+          natEnabled = true;
+          natLeaseMinutes = 60;
+          natRenewalMinutes = 30;
+          natTimeoutSeconds = 10;
+          overwriteRemoteDeviceNamesOnConnect = false;
+          progressUpdateIntervalS = 5;
+          reconnectionIntervalS = 20;
+          relayReconnectIntervalM = 10;
+          relaysEnabled = true;
+          releasesURL = "https://upgrades.syncthing.net/meta.json";
+          sendFullIndexOnUpgrade = false;
+          setLowPriority = true;
+          startBrowser = true;
+          stunKeepaliveMinS = 20;
+          stunKeepaliveStartS = 180;
+          stunServers = [ "default" ];
+          tempIndexMinBlocks = 10;
+          trafficClass = 0;
+          upgradeToPreReleases = false;
+          urAccepted = 3;
+          urInitialDelayS = 1800;
+          urPostInsecurely = false;
+          urSeen = 3;
+          urURL = "https://data.syncthing.net/newdata";
+        };
+
+        defaults = {
+          device = deviceDefaults // {
+            deviceID = "";
+            name = "";
+          };
+          folder = folderDefaults // {
+            devices = [ { deviceID = localDeviceId; } ];
+            id = "";
+            label = "";
+            path = "";
+            type = "sendreceive";
+            versioning = {
+              cleanupIntervalS = 3600;
+              fsPath = "";
+              fsType = "basic";
+              type = "";
+            };
+          };
+          ignores.lines = [ ];
+        };
+
+        devices = {
+          nixos-t480 = deviceDefaults // {
+            id = localDeviceId;
+            name = "nixos-t480";
+          };
+          fedora-t14g5 = deviceDefaults // {
+            id = "4PF6DVW-SVBXLUD-YNKJ2TY-4ZPYNRG-E7ZCVJ7-N2W5P5B-PPP636K-IZE6AAW";
+            name = "fedora-t14g5";
+          };
+          cachyos-legion = deviceDefaults // {
+            id = "7SMORQW-IGGTVO6-DNQ37VW-DCSYJUR-Z2LX5ZH-USD2JY4-NCFIA4J-FYVG4AM";
+            name = "cachyos-legion";
+          };
+        };
+
+        folders = {
+          "Skyrim Saves" = folderDefaults // {
+            id = "aavuh-cxuh6";
+            label = "Skyrim Saves";
+            path = "/mnt/SKYHAWK00_4TB/Sync/SkyrimSaves";
+            type = "sendreceive";
+            devices = sharedDevices;
+            ignorePatterns = [ ];
+          };
+          "Opencode Auth" = folderDefaults // {
+            id = "kfhrr-vfacf";
+            label = "Opencode Auth";
+            path = "/mnt/SKYHAWK00_4TB/Sync/home/.local/share/opencode";
+            type = "sendreceive";
+            devices = sharedDevices;
+            ignorePatterns = [ ];
+          };
+          Projects = folderDefaults // {
+            id = "kjyln-n9aar";
+            label = "Projects";
+            path = "/mnt/SKYHAWK00_4TB/Sync/home/Projects";
+            type = "sendreceive";
+            devices = sharedDevices;
+            ignorePatterns = [ ];
+          };
+          "Opencode Configuration" = folderDefaults // {
+            id = "tfy5m-vhwkk";
+            label = "Opencode Configuration";
+            path = "/mnt/SKYHAWK00_4TB/Sync/.config/opencode";
+            type = "sendreceive";
+            devices = sharedDevices;
+            ignorePatterns = [ ];
+          };
+          Wallpapers = folderDefaults // {
+            id = "x9ztl-nwukn";
+            label = "Wallpapers";
+            path = "/mnt/SKYHAWK00_4TB/Sync/home/Pictures/wallpapers";
+            type = "sendreceive";
+            devices = sharedDevices;
+            ignorePatterns = [ ];
+          };
+        };
+
+        # Syncthing owns empty LDAP/remote-ignore sections and runtime values:
+        # GUI API key, options.unackedNotificationIDs/urUniqueId, device
+        # numConnections, folder versioning with an empty type, and folder
+        # device introducedBy/encryptionPassword.
+      };
+      };
+
+    # Home-dir symlinks onto the synced drive (dirs are synced by Syncthing;
+    # L+ replaces whatever is there, pre-checked empty/absent on 2026-09-11).
+    systemd.tmpfiles.rules = [
+      "L+ /home/zep/Projects - - - - /mnt/SKYHAWK00_4TB/Sync/home/Projects"
+      "L+ /home/zep/.config/opencode - - - - /mnt/SKYHAWK00_4TB/Sync/.config/opencode"
+      "L+ /home/zep/.local/share/opencode - - - - /mnt/SKYHAWK00_4TB/Sync/home/.local/share/opencode"
+    ];
 
     systemd.services.syncthing = {
       requires = [ "mnt-SKYHAWK00_4TB.mount" ];
