@@ -208,7 +208,7 @@
     # Nightly auto-upgrade + weekly reboot + garbage collection
     features.auto-update.enable = true;
 
-    # Agent devbox: OpenCode (package only — Syncthing owns ~/.config/opencode)
+    # Agent devbox: OpenCode + configured Comfy-MCP runtime (Syncthing owns ~/.config/opencode)
     features.opencode.enable = true;
 
     # herdr headless server (user service + linger)
